@@ -1,0 +1,22 @@
+# ROS 2 build directories
+build/
+install/
+log/
+
+# Python generated files
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.eggs/
+
+# C/C++ generated files
+*.o
+*.so
+
+# IDE settings (VSCode etc.) - Optional
+.vscode/
+.idea/
+
+# OS generated files (macOS)
+.DS_Store
