@@ -1,35 +1,35 @@
 import rclpy
 from rclpy.node import Node
-from visualization_msgs.msg import Marker
-from visualization_msgs.msg import MarkerArray 
-from std_msgs.msg import String
-import math
+# 代用品を使う（これならビルド不要！）
+from example_interfaces.srv import AddTwoInts 
 
-class BoxNode(Node):
+class ServiceServer(Node):
     def __init__(self):
-        super().__init__('box_node')
-        self.pub = self.create_publisher(String,"Topic",10)
-        self.timer = self.create_timer(1.0,self.timer_callback)
-        # self.sub = self.create_subscription(String,"Topic",self.sub_callback,10)
-        self.i = 10
-    
-    def timer_callback(self):
-        msg = String()
-        if self.i > 0:
-            msg.data = f"ハッピーワールド{self.i}"
-        else:
-            msg.data = f"終わり"
-            self.destroy_timer(self.timer)
-        self.pub.publish(msg)
-        self.get_logger().info(f"パブリッシュ:{msg.data}")
-        self.i -= 1
+        super().__init__('service_server')
+        # 店を開く（サービス名: 'cmd_srv'）
+        self.srv = self.create_service(AddTwoInts, 'cmd_srv', self.callback)
+        self.get_logger().info('命令待ち... (1=前進, 0=停止)')
 
-    # def sub_callback(self,msg):
-    #     self.get_logger().info(f"サブスクライブ:{msg.data}")
+    def callback(self, request, response):
+        # request.a を「命令コード」として代用する
+        # 本来なら request.command == "前進" と書くところ
+        cmd_id = request.a
+        
+        if cmd_id == 1:
+            self.get_logger().info("【受信】命令: 前進します！")
+            response.sum = 1 # 成功フラグ (1=OK)
+        elif cmd_id == 0:
+            self.get_logger().info("【受信】命令: 停止します！")
+            response.sum = 1 # 成功フラグ
+        else:
+            self.get_logger().info(f"【受信】謎の命令: {cmd_id}")
+            response.sum = 0 # 失敗フラグ
+            
+        return response
 
 def main(args=None):
-    rclpy.init()
-    node = BoxNode()
+    rclpy.init(args=args)
+    node = ServiceServer()
     try:
         rclpy.spin(node)
     except KeyboardInterrupt:

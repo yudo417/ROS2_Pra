@@ -1,32 +1,49 @@
 import rclpy
 from rclpy.node import Node
-from std_msgs.msg import String
+from example_interfaces.srv import AddTwoInts
+import sys
 
-class ReceiverNode(Node):
+class ServiceClient(Node):
     def __init__(self):
-        super().__init__('receiver_node')
-        # 受信設定：「Topic」という名前の放送を待ち受ける
-        self.subscription = self.create_subscription(
-            String,
-            'Topic', # box_node.py で決めたトピック名と同じにする！
-            self.listener_callback,
-            10)
-        self.subscription  # 保持しておく
+        super().__init__('service_client')
+        # クライアント作成（接続先: 'cmd_srv'）
+        self.cli = self.create_client(AddTwoInts, 'cmd_srv')
+        
+        # サーバーが見つかるまで待機
+        while not self.cli.wait_for_service(timeout_sec=1.0):
+            self.get_logger().info('サーバーを探しています...')
+        
+        self.req = AddTwoInts.Request()
 
-    def listener_callback(self, msg):
-        # データが届いたらここが実行される
-        self.get_logger().info(f'聞こえた！: "{msg.data}"')
+    def send_command(self, cmd_num):
+        # 命令をセット (1=前進)
+        self.req.a = cmd_num
+        self.req.b = 0 # 使わないけど埋める
+        
+        # 送信して、結果が来る未来(Future)を受け取る
+        self.future = self.cli.call_async(self.req)
+        
+        # 結果が来るまでここで待つ
+        rclpy.spin_until_future_complete(self, self.future)
+        
+        return self.future.result()
 
 def main(args=None):
     rclpy.init(args=args)
-    node = ReceiverNode()
-    try:
-        rclpy.spin(node)
-    except KeyboardInterrupt:
-        pass
-    finally:
-        node.destroy_node()
-        rclpy.shutdown()
+    node = ServiceClient()
+    
+    # ここで命令を送る！ (1 = 前進)
+    print("命令「1 (前進)」を送信します...")
+    response = node.send_command(1)
+    
+    # 結果を確認
+    if response.sum == 1:
+        print("結果: 成功しました！")
+    else:
+        print("結果: 失敗しました...")
+
+    node.destroy_node()
+    rclpy.shutdown()
 
 if __name__ == '__main__':
     main()
