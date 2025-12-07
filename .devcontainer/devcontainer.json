@@ -1,0 +1,22 @@
+{
+    "name": "ROS 2 Humble",
+    "image": "osrf/ros:humble-desktop",
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "ms-iot.vscode-ros",
+                "ms-python.python",
+                "eamodio.gitlens"
+            ]
+        }
+    },
+    // コンテナ起動時に、毎回自動で実行されるコマンド
+    "postCreateCommand": "echo 'source /opt/ros/humble/setup.bash' >> ~/.bashrc",
+    "remoteUser": "root",
+    
+    // Macで画面(RViz)を出すための魔法の設定
+    "runArgs": [
+        "--net=host",
+        "-e", "DISPLAY=host.docker.internal:0" 
+    ]
+}

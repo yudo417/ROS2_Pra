@@ -1,6 +1,6 @@
 from setuptools import find_packages, setup
 
-package_name = 'test_pkg'
+package_name = 'my_package'
 
 setup(
     name=package_name,
@@ -13,15 +13,18 @@ setup(
     ],
     install_requires=['setuptools'],
     zip_safe=True,
-    maintainer='hayashikazuki',
+    maintainer='root',
     maintainer_email='hayashi.kazuki.hk@gmail.com',
     description='TODO: Package description',
-    license='Apache-2.0',
-    tests_require=['pytest'],
+    license='TODO: License declaration',
+    extras_require={
+        'test': [
+            'pytest',
+        ],
+    },
     entry_points={
         'console_scripts': [
-            "box_node = test_pkg.box_node:main",
-            "receive_node = test_pkg.receive_node:main",
+            'my_node = my_package.my_node:main'
         ],
     },
 )
